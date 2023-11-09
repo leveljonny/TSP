@@ -28,3 +28,54 @@ print(f"Distance between {postcode1} and {postcode2}: ", distance1_2)
 print(f"Distance between {postcode2} and {postcode3}: ", distance2_3)
 print(f"Distance between {postcode1} and {postcode3}: ", distance1_3)
 
+# Python
+
+from itertools import permutations
+
+# Create a list of all locations
+locations = [location1, location2, location3]
+postcodes = [postcode1, postcode2, postcode3]
+
+# Create a list of all possible permutations of these locations
+perms = permutations(range(len(locations)))
+
+# Initialize variables to keep track of the shortest route and its distance
+shortest_route = None
+shortest_distance = None
+
+# For each permutation, calculate the total distance of the route
+for perm in perms:
+    total_distance = 0
+    for i in range(len(perm) - 1):
+        total_distance += geodesic((locations[perm[i]].latitude, locations[perm[i]].longitude), (locations[perm[i+1]].latitude, locations[perm[i+1]].longitude)).miles
+    # Add distance from last location back to the first
+    total_distance += geodesic((locations[perm[-1]].latitude, locations[perm[-1]].longitude), (locations[perm[0]].latitude, locations[perm[0]].longitude)).miles
+
+    # If this route is shorter than the current shortest, update shortest_route and shortest_distance
+    if shortest_distance is None or total_distance < shortest_distance:
+        shortest_route = perm
+        shortest_distance = total_distance
+
+# Print the shortest route and its distance
+print("Shortest route: ", end="")
+for i in shortest_route:
+    print(postcodes[i], end=" -> ")
+print(postcodes[shortest_route[0]])
+print(f"Distance of shortest route: {shortest_distance}")
+
+
+
+# Flask
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+@app.route('/shortest_route', methods=['POST'])
+def shortest_route():
+    postcodes = request.json['postcodes']
+    # existing logic to calculate shortest route and distance
+    # ...
+    return jsonify({'shortest_route': shortest_route, 'distance': shortest_distance})
+
+if __name__ == '__main__':
+    app.run(debug=True)
